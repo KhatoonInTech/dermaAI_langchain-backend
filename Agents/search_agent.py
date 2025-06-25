@@ -9,7 +9,11 @@ class SearchAgent:
     extract URLs from search results, and scrape article contents.
     """
     def __init__(self):
-        self.llm = LLMManager()
+        """
+        Initialize the SearchAgent.
+        This class does not require any specific initialization parameters.
+        """
+        self.llm_manager = LLMManager()
     @staticmethod
     def search_images(query):
         """
@@ -244,6 +248,6 @@ class SearchAgent:
         """
 
         # Send the prompt to the LLM and get the response
-        summary = self.llm.send_message_to_llm(prompt)
+        summary = self.llm_manager.send_message_to_llm(prompt)
         
         return summary
