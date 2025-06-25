@@ -90,18 +90,28 @@ class LLMManager:
             return f"Error analyzing visuals: {str(e)}"
 
     @staticmethod
-    def parse_response(response):
-        if hasattr(response, 'content'):
-            response_raw = response.content.strip()
+    def parse_response(input_data):
+        # If input has 'content' attribute (like a response object), extract string
+        if hasattr(input_data, 'content'):
+            raw = input_data.content.strip()
         else:
-            response_raw = str(response).strip()
-            response_raw = response_raw.replace('``````', '').strip()
-            response_clean = re.search(r'(\[.*\]|\{.*\})', response_raw, re.DOTALL)
+            raw = str(input_data).strip()
+        
+        # Remove any unwanted wrappers or artifacts if needed
+        raw = raw.replace("```", '').replace("json", '').strip()
+        
         try:
-            response_str = response_clean.group(0)
-            return json.loads(response_str)
-        except (json.JSONDecodeError, AttributeError, TypeError) as e:
-            raise ValueError(f"JSON decoding failed. Raw response: {response_raw}\nError: {e}")
-
-  
+            # Try to parse the raw string as JSON
+            parsed = json.loads(raw)
+            
+            # If parsed is list or dict, return it directly
+            if isinstance(parsed, (list, dict)):
+                return parsed
+            
+            # If parsed is a primitive JSON type (string, number, etc.), return as string
+            return str(parsed)
+        
+        except json.JSONDecodeError:
+            # If JSON parsing fails, return the raw string as is
+            return raw
 
