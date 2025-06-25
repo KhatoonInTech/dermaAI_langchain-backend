@@ -239,7 +239,9 @@ class SearchAgent:
 
                 4. Emphasize information that will **enhance the efficiency and depth** of dermatology research.
 
-                5. Avoid markdown, code formatting, or links—**plain text only**.
+                5. Avoid markdown, code formatting,json response or links
+                
+                6. Your response should always be in plain text only.
 
                 Before finalizing:
                 ✅ Double-check that all critical insights related to the research focus ({query}) are included.  
