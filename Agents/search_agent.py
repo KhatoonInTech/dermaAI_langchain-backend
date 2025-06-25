@@ -8,7 +8,8 @@ class SearchAgent:
     A class to perform Google Custom Search for images and articles,
     extract URLs from search results, and scrape article contents.
     """
-
+    def __init__(self):
+        self.llm = LLMManager()
     @staticmethod
     def search_images(query):
         """
@@ -243,6 +244,6 @@ class SearchAgent:
         """
 
         # Send the prompt to the LLM and get the response
-        summary = LLMManager.send_message_to_llm(prompt=prompt)
+        summary = self.llm.send_message_to_llm(prompt)
         
         return summary
