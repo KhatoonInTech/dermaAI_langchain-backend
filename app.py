@@ -1,6 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, BackgroundTasks, Body, Depends
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse, Response
-from fastapi.middleware.cors import CORSMiddleware
 from Agents.input_agent import InputAgent
 from Agents.diagnosis_agent import DiagnosisAgent
 from Agents.report_generator_agent import ReportGeneratorAgent
@@ -20,13 +19,6 @@ app = FastAPI(title="DermaAI API",
     description="Simulated dermatology assistant with assessment, report analysis, and conversation capabilities.",
     version="1.1.0",
 )
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
 
 #Creating Instances of the Agentic Classes
 Diagnosis_Agent = DiagnosisAgent()
@@ -345,13 +337,4 @@ if __name__ == "__main__":
     print("Starting Uvicorn server...")
     port = int(os.getenv("PORT", 8000))
     uvicorn.run("app:app", host="127.0.0.1", port=port, reload=True, workers=1)
-    # llm=LLMManager()
-    # while True:
-    #     user_input = input("Enter your message: ")
-    #     if user_input.lower() == 'exit':
-    #         break
-    #     try:
-    #         response = llm.send_message_to_llm(user_input)
-    #         print(f"LLM Response: {response}")
-    #     except Exception as e:
-    #         print(f"Error: {e}")
+    
