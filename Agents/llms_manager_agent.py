@@ -114,4 +114,3 @@ class LLMManager:
         except json.JSONDecodeError:
             # If JSON parsing fails, return the raw string as is
             return raw
-
