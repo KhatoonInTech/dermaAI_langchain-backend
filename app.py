@@ -47,6 +47,66 @@ async def read_root():
             "/search_articles": "POST: Search for articles related to a query and return summaries."
             }
         }
+    
+@app.post("/search_articles", response_model=SearchResponse, tags=["Research"])
+async def search_articles_endpoint(query: str = Body(..., embed=True)):
+    """
+    Searches for articles related to the query, processes them, and returns summaries.
+    """
+    print(f"\n--- Article Search Request for: {query} ---")
+    start_time = time.time()
+
+    try:
+        # Search for articles
+        print("Performing Google search...")
+        search_results = Search_Agent.search_articles(query, max_results=10)
+        if not search_results:
+            raise HTTPException(status_code=500, detail="Failed to retrieve search results")
+
+        # Get metadata for all results
+        items_count = len(search_results.get('items', []))
+        print(f"Processing {items_count} search results...")
+        search_metadata = Search_Agent.articles_url(search_results, max_urls=items_count)
+
+        # Process each article
+        articles = []
+        for article_metadata in search_metadata:
+            try:
+                Title = article_metadata.get('title', 'No Title')
+                print(f"Processing article: {Title[:50]}...")
+                
+                summary = Search_Agent.summarize_article(article_metadata, query)
+                
+                articles.append(ArticleSummary(
+                    title=Title,
+                    snippet=article_metadata.get('snippet', Title),
+                    url=article_metadata.get('url', 'No URL'),
+                    image=article_metadata.get('image_context'),
+                    summary=str(summary)
+                ))
+            except Exception as article_error:
+                print(f"⚠️ Error processing article {Title}: {article_error}")
+                continue
+
+        processing_time = round(time.time() - start_time, 2)
+        
+        if not articles:
+            raise HTTPException(status_code=404, detail="No articles could be processed successfully")
+
+        print(f"✅ Successfully processed {len(articles)} articles in {processing_time}s")
+        return SearchResponse(
+            message="Articles retrieved and processed successfully",
+            processing_time_seconds=processing_time,
+            query=query,
+            articles=articles
+        )
+
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        print(f"🚨 Error during article search and processing: {e}")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error processing search request: {str(e)}")
 
 @app.post("/generate_questions", response_model=QuestionResponse, tags=["Assessment Steps"])
 async def get_diagnostic_questions_endpoint(request: QuestionRequest = Body(...)):
@@ -271,65 +331,6 @@ async def continue_conversation_endpoint(request: ConversationRequest = Body(...
         )
 
 
-@app.post("/search_articles", response_model=SearchResponse, tags=["Research"])
-async def search_articles_endpoint(query: str = Body(..., embed=True)):
-    """
-    Searches for articles related to the query, processes them, and returns summaries.
-    """
-    print(f"\n--- Article Search Request for: {query} ---")
-    start_time = time.time()
-
-    try:
-        # Search for articles
-        print("Performing Google search...")
-        search_results = Search_Agent.search_articles(query, max_results=10)
-        if not search_results:
-            raise HTTPException(status_code=500, detail="Failed to retrieve search results")
-
-        # Get metadata for all results
-        items_count = len(search_results.get('items', []))
-        print(f"Processing {items_count} search results...")
-        search_metadata = Search_Agent.articles_url(search_results, max_urls=items_count)
-
-        # Process each article
-        articles = []
-        for article_metadata in search_metadata:
-            try:
-                Title = article_metadata.get('title', 'No Title')
-                print(f"Processing article: {Title[:50]}...")
-                
-                summary = Search_Agent.summarize_article(article_metadata, query)
-                
-                articles.append(ArticleSummary(
-                    title=Title,
-                    snippet=article_metadata.get('snippet', Title),
-                    url=article_metadata.get('url', 'No URL'),
-                    image=article_metadata.get('image_context'),
-                    summary=summary
-                ))
-            except Exception as article_error:
-                print(f"⚠️ Error processing article {Title}: {article_error}")
-                continue
-
-        processing_time = round(time.time() - start_time, 2)
-        
-        if not articles:
-            raise HTTPException(status_code=404, detail="No articles could be processed successfully")
-
-        print(f"✅ Successfully processed {len(articles)} articles in {processing_time}s")
-        return SearchResponse(
-            message="Articles retrieved and processed successfully",
-            processing_time_seconds=processing_time,
-            articles=articles,
-            query=query
-        )
-
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        print(f"🚨 Error during article search and processing: {e}")
-        import traceback; traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error processing search request: {str(e)}")
 
 # --- Run Instruction (for local development) ---
 if __name__ == "__main__":
