@@ -167,7 +167,7 @@ class SearchAgent:
                 continue
         return contents
     
-    def deepsearch(self, query):
+    def deepsearch(self, query, ,max_results=5):
         """
         Perform a deep search for articles related to the query.
 
@@ -177,8 +177,8 @@ class SearchAgent:
         Returns:
             list: List of strings containing the main textual content from the articles.
         """
-        articles = self.search_articles(query)
-        urls_with_metadata = self.articles_url(articles)
+        articles = self.search_articles(query, max_results)
+        urls_with_metadata = self.articles_url(articles, max_results)
         urls=[urlmd['url'] for urlmd in urls_with_metadata]
         bodies = self.scrapper(urls)
         return bodies
