@@ -25,10 +25,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Set PORT environment variable for GCloud Run
-ENV PORT=8000
+ENV PORT=8080
 
 # Expose the port
-EXPOSE 8000
+EXPOSE 8080
 
 # Start command (write JSON string from env var to file, then run app)
 CMD sh -c "uvicorn app:app --host 0.0.0.0 --port $PORT"
